@@ -17,6 +17,7 @@ function civi_pcp_form_alter(&$form, &$form_state, $form_id) {
   	$form['submitted']['civicrm_1_contact_1_fieldset_fieldset']['civicrm_1_contact_1_email_email']['#access'] = FALSE;
   	db_set_active('civicrm');
   	$form['submitted']['contribution_page_type']['#options'] = db_query('SELECT id, title FROM {civicrm_contribution_page}')->fetchAllKeyed();
+  	$form['submitted']['contribution_event_type']['#options'] = db_query('SELECT id, title FROM {civicrm_event}')->fetchAllKeyed();
   	db_set_active();
   }
 }
@@ -41,6 +42,22 @@ function civi_pcp_webform_submission_insert($node, $submission) {
     // API for create campaign lacks functionality for re-writing directly into civicrm_pcp table 
     // so use a db_insert instead.
     db_set_active('civicrm');
+    
+    // Check value entered so page type can be set accordingly.
+    if ($submission->data['19']['0'] == '1') {
+      $page_type = 'contribute';
+    }
+    else {
+      $page_type = 'event';
+    }
+    
+    // Check page type so page_id can be set accordingly.
+    if ($submission->data['19']['0'] == '1') {
+      $pcp_id = $submission->data['18']['0'];
+    }
+    else {
+      $pcp_id = $submission->data['20']['0'];
+    }
 	
     //db_insert into civicrm_pcp table every new personal campaign.
     db_insert('civicrm_pcp')
@@ -51,9 +68,9 @@ function civi_pcp_webform_submission_insert($node, $submission) {
         'intro_text' => $submission->data['8']['0'],
         'page_text' => $submission->data['14']['0'],
         'donate_link_text' => $submission->data['13']['0'],
-        'page_id' => $submission->data['18']['0'], // page_id of contribution page
-        'page_type' => 'contribute',
-        'pcp_block_id' => $submission->data['18']['0'],
+        'page_id' => $pcp_id, // page_id of contribution page
+        'page_type' => $page_type,
+        'pcp_block_id' => $pcp_id,
         'is_thermometer' => 1,
         'is_honor_roll' => 1,
         'goal_amount' => $submission->data['10']['0'],
