@@ -19,6 +19,9 @@ function civi_pcp_webform_menu_default_menu_links() {
     'options' => array(
       'alter' => TRUE,
       'identifier' => 'main-menu_create-your-campaign-here:node/4',
+      'attributes' => array(
+        'title' => '',
+      ),
     ),
     'module' => 'menu',
     'hidden' => 0,
@@ -26,7 +29,7 @@ function civi_pcp_webform_menu_default_menu_links() {
     'has_children' => 0,
     'expanded' => 0,
     'weight' => 0,
-    'customized' => 0,
+    'customized' => 1,
   );
 
   // Translatables
