@@ -15,6 +15,9 @@
 function civi_pcp_form_alter(&$form, &$form_state, $form_id) {
   if ($form['#node']->uuid == 'c2bde896-cc95-45c3-8f69-2b0c3144e9cf') {
   	$form['submitted']['civicrm_1_contact_1_fieldset_fieldset']['civicrm_1_contact_1_email_email']['#access'] = FALSE;
+  	db_set_active('civicrm');
+  	$form['submitted']['contribution_page_type']['#options'] = db_query('SELECT id, title FROM {civicrm_contribution_page}')->fetchAllKeyed();
+  	db_set_active();
   }
 }
 
@@ -48,9 +51,9 @@ function civi_pcp_webform_submission_insert($node, $submission) {
         'intro_text' => $submission->data['8']['0'],
         'page_text' => $submission->data['14']['0'],
         'donate_link_text' => $submission->data['13']['0'],
-        'page_id' => $submission->data['17']['0'], // page_id of contribution page
+        'page_id' => $submission->data['18']['0'], // page_id of contribution page
         'page_type' => 'contribute',
-        'pcp_block_id' => $submission->data['17']['0'],
+        'pcp_block_id' => $submission->data['18']['0'],
         'is_thermometer' => 1,
         'is_honor_roll' => 1,
         'goal_amount' => $submission->data['10']['0'],
