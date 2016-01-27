@@ -7,6 +7,108 @@
  */
 
 /**
+ * Implements hook_install().
+ */
+/*function civi_pcp_install() {
+  db_set_active('civicrm');
+  // Populate the default {node_access} record.
+  db_insert('civicrm_navigation')
+    ->fields(array(
+	  'domain_id' => 1,
+	  'label' => 'Edit PCP page type',
+	  'name' => 'Edit PCP page type',
+	  'url' => 'civicrm/edit-pcp?reset=1',
+	  'permission' => 'administer CiviCRM',
+	  'permission_operator' => '',
+	  'parent_id' => NULL,
+	  'is_active' => 1,
+	  'has_separator' => 0,
+	  'weight' => 10,
+    ))
+    ->execute();
+  db_set_active();
+}*/
+
+/**
+ * Implements hook_menu().
+ */
+function civi_pcp_menu() {
+  $items = array();
+
+  $items['civicrm/edit-pcp?reset=1'] = array(
+    'title' => 'Edit PCP page type',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('civi_pcp_form'), //put the name of the form here
+    'access callback' => TRUE,
+    'access arguments' => array('administer CiviCRM'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form().
+ * Custom function to edit PCP to contribution or event types.
+ */
+function civi_pcp_form($node, &$form_state) {
+
+  $form = array();
+  
+  $form['title'] = array(
+    '#type' => 'select',
+    '#title' => t('Title'),
+    '#options' => array(
+      1 => 'Event one',
+      2 => 'Event two',
+    ),
+    '#description' => t('Choose an option.'),
+  );
+	
+  $form['pcp_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Contribution or event?'),
+    '#options' => array(
+      1 => 'Contribution',
+      2 => 'Event',
+    ),
+    '#description' => t('Choose an option.'),
+  );
+  
+  $form['buttons']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#submit' => array('civi_pcp_form_submit'),
+  );
+	
+  return $form;
+  
+}
+
+/**
+ * Implements hook_form_submit().
+ */
+function civi_pcp_form_submit($form, $form_state) {
+
+  // Set value to DB.
+  if ($form_state['values']['pcp_type'] == '1') {
+  	$pcp_type = 'contribute';
+  }
+  else {
+  	$pcp_type = 'event';
+  }
+  db_set_active('civicrm');
+  db_update('civicrm_pcp')
+  ->fields(array(
+    'page_type' => $pcp_type,
+  ))
+  ->condition('id', $form_state['values']['title'], '=')
+  ->execute();
+  db_set_active();
+  drupal_set_message("Successfully changed page type to " . $pcp_type);
+}
+
+/**
  * Implements hook_form_alter().
  * @param unknown $form
  * @param unknown $form_state
@@ -20,6 +122,14 @@ function civi_pcp_form_alter(&$form, &$form_state, $form_id) {
   	$form['submitted']['contribution_event_type']['#options'] = db_query('SELECT id, title FROM {civicrm_event}')->fetchAllKeyed();
   	db_set_active();
   }
+  if ($form_id == 'civi_pcp_form') {
+  	db_set_active('civicrm');
+  	
+  	$form['title']['#options'] = db_query("SELECT id, title FROM {civicrm_pcp}")->fetchAllKeyed();
+
+  	db_set_active();
+  }
+  
 }
 
 /**
