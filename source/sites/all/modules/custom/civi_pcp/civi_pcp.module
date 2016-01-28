@@ -27,6 +27,7 @@ function civi_pcp_install() {
     ))
     ->execute();
   db_set_active();
+  drupal_flush_all_caches();
 }
 
 /**
@@ -45,6 +46,19 @@ function civi_pcp_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function civi_pcp_theme($existing, $type, $theme, $path) {
+  return array (
+    'civi_pcp_form' => array(
+	  'arguments' => array('form' => NULL),
+      'template' => 'civi_pcp_form',
+      'render element' => 'form',
+    ),
+  );
 }
 
 /**
@@ -230,4 +244,5 @@ function civi_pcp_uninstall() {
     ->condition('name', 'Edit PCP page type')
     ->execute();
   db_set_active();
+  drupal_flush_all_caches();
 }
