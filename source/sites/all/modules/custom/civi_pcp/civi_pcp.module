@@ -17,9 +17,9 @@ function civi_pcp_install() {
 	  'domain_id' => 1,
 	  'label' => 'Edit PCP page type',
 	  'name' => 'Edit PCP page type',
-	  'url' => 'civicrm/edit-pcp?reset=1',
-	  'permission' => 'administer CiviCRM',
-	  'permission_operator' => '',
+	  'url' => 'civicrm/admin/edit-pcp?reset=1',
+	  'permission' => 'access CiviCRM, administer CiviCRM',
+	  'permission_operator' => 'AND',
 	  'parent_id' => NULL,
 	  'is_active' => 1,
 	  'has_separator' => 0,
@@ -36,7 +36,7 @@ function civi_pcp_install() {
 function civi_pcp_menu() {
   $items = array();
 
-  $items['civicrm/edit-pcp?reset=1'] = array(
+  $items['civicrm/admin/edit-pcp?reset=1'] = array(
     'title' => 'Edit PCP page type',
     'type' => MENU_CALLBACK,
     'page callback' => 'drupal_get_form',
@@ -49,16 +49,12 @@ function civi_pcp_menu() {
 }
 
 /**
- * Implements hook_theme().
+ * Implements hook_page_alter().
  */
-function civi_pcp_theme($existing, $type, $theme, $path) {
-  return array (
-    'civi_pcp_form' => array(
-	  'arguments' => array('form' => NULL),
-      'template' => 'civi_pcp_form',
-      'render element' => 'form',
-    ),
-  );
+function civi_pcp_page_alter(&$page) {
+  if (arg(1) == 'admin' && arg(2) == 'edit-pcp') {
+  	$page['content']['system_main']['main']['#markup'] = drupal_render(drupal_get_form('civi_pcp_form'));;
+  }
 }
 
 /**
